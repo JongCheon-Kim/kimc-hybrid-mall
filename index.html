@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>명보씨푸드 - 김C 하이브리드 몰</title>
+    <!-- Tailwind CSS (디자인 프레임워크) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons (아이콘 라이브러리) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- 토스페이먼츠 SDK 추가 -->
+    <script src="https://js.tosspayments.com/v1/payment"></script>
+    <style>
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .tab-content { display: none !important; height: 100%; overflow-y: auto; }
+        .tab-content.active { display: block !important; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-200 min-h-screen flex items-center justify-center p-4 sm:p-8 font-sans">
+
+    <div class="w-full max-w-[400px] h-[800px] max-h-screen bg-white rounded-[2rem] shadow-2xl overflow-hidden flex flex-col relative border-8 border-gray-900">
+        
+        <!-- 헤더 -->
+        <header class="bg-white border-b border-gray-100 px-4 py-4 flex items-center justify-between z-10 shadow-sm shrink-0">
+            <div class="flex items-center">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3 shadow-md">
+                    <i class="ph-bold ph-package text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-gray-900 leading-none">명보씨푸드</h1>
+                    <span class="text-xs font-medium text-blue-600">김C 하이브리드 몰</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 토스트 알림 -->
+        <div id="toast-notification" class="absolute top-20 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-3 rounded-full shadow-2xl z-50 transition-all duration-300 opacity-0 pointer-events-none translate-y-[-20px] text-sm font-bold w-[85%] text-center border border-gray-700">
+            알림 메시지
+        </div>
+
+        <!-- 메인 영역 -->
+        <div class="flex-1 overflow-hidden relative bg-gray-50">
+            
+            <!-- [1] 챗봇 화면 -->
+            <div id="tab-chat" class="tab-content active bg-gray-100">
+                <div class="flex flex-col h-full">
+                    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+
+                    <div class="bg-white border-t border-gray-200 p-2 shrink-0">
+                        <div class="flex space-x-2 overflow-x-auto pb-2 px-2 hide-scrollbar">
+                            <button onclick="handleQuickMessage('당일바리 고등어 🐟')" class="whitespace-nowrap bg-gray-100 text-gray-700 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-gray-200">당일바리 고등어 🐟</button>
+                            <button onclick="handleQuickMessage('오늘의 추천 👍')" class="whitespace-nowrap bg-gray-100 text-gray-700 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-gray-200">오늘의 추천 👍</button>
+                            <button onclick="handleQuickMessage('제철 암꽃게 🦀')" class="whitespace-nowrap bg-gray-100 text-gray-700 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-gray-200">제철 암꽃게 🦀</button>
+                        </div>
+                        <div class="flex items-center p-2 bg-gray-50 rounded-full mx-2 mb-2 border border-gray-200 focus-within:border-blue-500">
+                            <input type="text" id="chat-input" placeholder="예: 고등어 2개 살게" class="flex-1 bg-transparent outline-none px-3 text-sm text-gray-800" onkeypress="if(event.key === 'Enter') sendMessage()">
+                            <button onclick="sendMessage()" class="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 shadow-md transition-colors flex-shrink-0">
+                                <i class="ph-bold ph-paper-plane-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [2] 쇼핑 화면 -->
+            <div id="tab-shop" class="tab-content bg-gray-50 p-4">
+                <h2 class="text-xl font-bold text-gray-800 mb-2 flex items-center">
+                    <i class="ph-fill ph-storefront mr-2 text-blue-600"></i> 명보 직영 몰
+                </h2>
+                <div class="flex space-x-2 overflow-x-auto pb-3 mb-2 hide-scrollbar" id="category-filters"></div>
+                <div id="shop-grid" class="grid grid-cols-2 gap-3 pb-4"></div>
+            </div>
+
+            <!-- [3] 관리자 화면 -->
+            <div id="tab-admin" class="tab-content bg-gray-50 p-4">
+                <div class="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center border-b pb-3">
+                        <i class="ph-bold ph-gear mr-2 text-gray-500"></i> 현장 상품 등록
+                    </h2>
+                    <form id="admin-form" onsubmit="handleAdminSubmit(event)" class="space-y-4">
+                        <div class="border-2 border-dashed border-gray-300 rounded-xl h-32 flex flex-col items-center justify-center text-gray-400 bg-gray-50 cursor-pointer hover:bg-gray-100">
+                            <i class="ph-bold ph-camera text-3xl mb-2"></i>
+                            <span class="text-sm font-medium">현장 사진 업로드</span>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">품명</label>
+                            <input type="text" id="admin-name" required class="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 bg-white" placeholder="예) 당일 조업 제주 은갈치">
+                        </div>
+                        <div class="flex space-x-3">
+                            <div class="flex-1">
+                                <label class="block text-xs font-bold text-gray-600 mb-1">카테고리</label>
+                                <select id="admin-category" class="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 bg-white">
+                                    <option value="생선류">생선류</option>
+                                    <option value="새우/게">새우/게</option>
+                                    <option value="연체/패류">연체/패류</option>
+                                    <option value="건어물">건어물</option>
+                                </select>
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-xs font-bold text-gray-600 mb-1">판매가(원)</label>
+                                <input type="number" id="admin-price" required class="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 bg-white" placeholder="0">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition mt-4 shadow-md">즉시 노출하기</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 하단 네비게이션 -->
+        <nav class="bg-white border-t border-gray-200 px-6 pt-3 pb-6 flex justify-between items-center shrink-0 relative z-20">
+            <button onclick="switchTab('shop')" class="nav-btn flex flex-col items-center text-gray-400" data-target="shop">
+                <i class="ph-fill ph-shopping-bag text-2xl mb-1"></i>
+                <span class="text-[10px] font-bold">전체쇼핑</span>
+            </button>
+            <button onclick="switchTab('chat')" class="nav-btn flex flex-col items-center -mt-5 bg-white p-2 rounded-full shadow-[0_-5px_10px_rgba(0,0,0,0.05)] border border-gray-100 text-blue-600" data-target="chat">
+                <div class="icon-bg p-3 rounded-full bg-blue-600 text-white transition-colors">
+                    <i class="ph-fill ph-chats-circle text-2xl"></i>
+                </div>
+                <span class="text-[10px] font-bold mt-1">김C 상담</span>
+            </button>
+            <button onclick="switchTab('admin')" class="nav-btn flex flex-col items-center text-gray-400" data-target="admin">
+                <i class="ph-fill ph-gear text-2xl mb-1"></i>
+                <span class="text-[10px] font-bold">업체관리</span>
+            </button>
+        </nav>
+
+        <!-- 결제 모달 -->
+        <div id="payment-modal" class="hidden absolute inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-4">
+            <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl transition-transform transform translate-y-full duration-300" id="payment-modal-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                        <i class="ph-fill ph-credit-card mr-2 text-blue-600"></i> 실전 결제 연동
+                    </h3>
+                    <button onclick="closePaymentModal()" class="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-100">
+                    <div class="text-sm text-gray-500 mb-1">주문 상품</div>
+                    <div id="pay-product-name" class="font-bold text-gray-800">상품명</div>
+                    <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-200">
+                        <span class="text-sm text-gray-600">총 결제금액</span>
+                        <span id="pay-product-price" class="text-xl font-extrabold text-blue-600">0원</span>
+                    </div>
+                </div>
+                <button onclick="processPayment()" class="w-full bg-blue-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:bg-blue-700 transition flex items-center justify-center">
+                    토스페이먼츠로 결제하기 <i class="ph-bold ph-caret-right ml-1"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 토스페이먼츠 객체 초기화 (소장님의 테스트 키 적용)
+        const tossPayments = TossPayments("test_ck_ma60RZblrqY2jYp7oRpMrwzYWbn1");
+
+        let products = [
+            { id: 'P001', name: '명보 특급 흰다리새우', size: '31/40미(대)', price: 18900, tag: '#베스트셀러', category: '새우/게', image: '🍤' },
+            { id: 'P002', name: '김씨밥 손질 고등어', size: '특대(30cm+)', price: 15500, tag: '#당일바리', category: '생선류', image: '🐟' },
+            { id: 'P003', name: '명보 제주 은갈치', size: '3지(상급)', price: 24000, tag: '#신상품', category: '생선류', image: '🌊' },
+            { id: 'P004', name: '명보 자숙 문어', size: '슬라이스 300g', price: 13500, tag: '#숙회용', category: '연체/패류', image: '🐙' },
+            { id: 'P005', name: '명보 서해안 암꽃게', size: '1kg(3~4미)', price: 45000, tag: '#제철한정', category: '새우/게', image: '🦀' },
+            { id: 'P006', name: '완도 특대 활전복', size: '1kg(8~9미)', price: 38000, tag: '#산지직송', category: '연체/패류', image: '🦪' },
+            { id: 'P007', name: '구룡포 반건조 오징어', size: '10미(1.5kg)', price: 28000, tag: '#맥주도둑', category: '건어물', image: '🦑' },
+            { id: 'P008', name: '통영 당일조업 생굴', size: '1kg(특)', price: 16500, tag: '#바다의우유', category: '연체/패류', image: '🪨' }
+        ];
+
+        let currentPaymentProduct = null;
+        let activeCategory = '전체';
+        const categories = ['전체', '생선류', '새우/게', '연체/패류', '건어물'];
+
+        window.onload = () => {
+            renderCategoryFilters();
+            renderShop();
+            addSystemMessage('소장님, 토스 실전 결제 연동이 완료되었습니다! "고등어 결제할게"라고 말씀하시거나 쇼핑 탭에서 상품을 주문해 보십시오.');
+        };
+
+        function showToast(message) {
+            const toast = document.getElementById('toast-notification');
+            toast.innerText = message;
+            toast.classList.remove('opacity-0', 'translate-y-[-20px]');
+            setTimeout(() => toast.classList.add('opacity-0', 'translate-y-[-20px]'), 3000);
+        }
+
+        function switchTab(targetTab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${targetTab}`).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if (btn.dataset.target === targetTab) btn.classList.add('text-blue-600');
+                else btn.classList.remove('text-blue-600');
+            });
+            if(targetTab === 'chat') scrollToBottom();
+        }
+
+        // 누락되었던 퀵버튼 클릭 핸들러 복구
+        function handleQuickMessage(text) {
+            document.getElementById('chat-input').value = text;
+            sendMessage();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+            addUserMessage(text);
+            input.value = '';
+
+            setTimeout(() => {
+                let replyText = '말씀하신 물건은 창고에 한번 더 확인해봐야겠습니다. 일단 오늘 가장 물 좋은 녀석들 먼저 보시지요!';
+                let replyProducts = [];
+                let orderTriggered = false;
+
+                // 1. 대화형 주문 로직 (자연어 의도 파악 원복)
+                const isOrderIntent = /(살게|주문|결제|줘|할게)/.test(text); 
+                
+                let matchedProduct = null;
+                if (text.includes('고등어')) matchedProduct = products.find(p => p.id === 'P002');
+                else if (text.includes('새우')) matchedProduct = products.find(p => p.id === 'P001');
+                else if (text.includes('꽃게')) matchedProduct = products.find(p => p.id === 'P005');
+                else if (text.includes('은갈치') || text.includes('갈치')) matchedProduct = products.find(p => p.id === 'P003');
+                else if (text.includes('문어')) matchedProduct = products.find(p => p.id === 'P004');
+                else if (text.includes('전복')) matchedProduct = products.find(p => p.id === 'P006');
+                else if (text.includes('오징어')) matchedProduct = products.find(p => p.id === 'P007');
+                else if (text.includes('생굴') || text.includes('굴')) matchedProduct = products.find(p => p.id === 'P008');
+
+                // 2. 응답 분기 처리
+                if (isOrderIntent && matchedProduct) {
+                    replyText = `사장님, [${matchedProduct.name}] 바로 준비하겠습니다! 아래 실제 결제창을 띄워드렸으니 확인 부탁드립니다.`;
+                    orderTriggered = true;
+                    replyProducts = [matchedProduct];
+                } else if (matchedProduct) {
+                     if (matchedProduct.id === 'P002') replyText = '오늘 아침에 막 손질 끝낸 고등어입니다! 살이 아주 튼실합니다. 바로 확인해보시겠습니까?';
+                     else if (matchedProduct.id === 'P001') replyText = '명보의 자랑, 특급 흰다리새우 추천드립니다. 급냉으로 신선도 꽉 잡았습니다.';
+                     else if (matchedProduct.id === 'P005') replyText = '알이 꽉 찬 서해안 암꽃게 방금 들어왔습니다. 수량이 얼마 안 남았으니 서두르십시오!';
+                     else replyText = `사장님께서 찾으시는 [${matchedProduct.name}] 여기 대령했습니다. 상태 아주 좋습니다!`;
+                     
+                     replyProducts = [matchedProduct];
+                } else if (text.includes('오늘의 추천') || text.includes('추천')) {
+                    replyText = '오늘 선별장에서 가장 상태 좋은 놈들로 딱 3개만 추려봤습니다. 옆으로 넘겨보시고 골라주십시오!';
+                    replyProducts = [products[4], products[1], products[5]];
+                }
+
+                addSystemMessage(replyText);
+
+                if (replyProducts.length > 0) {
+                    setTimeout(() => {
+                        addProductCards(replyProducts);
+                        if (orderTriggered) {
+                            setTimeout(() => openPaymentModal(matchedProduct), 500); 
+                        }
+                    }, 600);
+                }
+            }, 800);
+        }
+
+        function addUserMessage(text) {
+            document.getElementById('chat-messages').insertAdjacentHTML('beforeend', `<div class="flex justify-end"><div class="max-w-[75%] rounded-2xl p-3 bg-blue-600 text-white rounded-br-none text-sm shadow-sm">${text}</div></div>`);
+            scrollToBottom();
+        }
+
+        function addSystemMessage(text) {
+            document.getElementById('chat-messages').insertAdjacentHTML('beforeend', `<div class="flex justify-start"><div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs mr-2 flex-shrink-0">김C</div><div class="max-w-[80%] rounded-2xl p-3 bg-white text-gray-800 rounded-bl-none shadow-sm text-sm border border-gray-100">${text}</div></div>`);
+            scrollToBottom();
+        }
+
+        function addProductCards(productArray) {
+            let cardsHtml = '';
+            productArray.forEach(p => {
+                const jsonStr = JSON.stringify(p).replace(/"/g, '&quot;');
+                cardsHtml += `<div class="bg-white rounded-xl shadow-sm p-3 w-[180px] border border-gray-100 flex-shrink-0 mr-2 snap-center"><div class="h-20 bg-gray-50 rounded-lg flex items-center justify-center text-4xl mb-2">${p.image}</div><h4 class="font-bold text-gray-800 text-sm mt-2 line-clamp-1">${p.name}</h4><div class="flex justify-between items-center mt-3"><span class="font-bold text-sm text-gray-900">${p.price.toLocaleString()}원</span><button onclick="openPaymentModal(${jsonStr})" class="bg-gray-900 text-white text-[11px] px-3 py-1.5 rounded-lg font-bold">주문</button></div></div>`;
+            });
+            document.getElementById('chat-messages').insertAdjacentHTML('beforeend', `<div class="flex justify-start w-full overflow-hidden"><div class="w-8 h-8 rounded-full bg-transparent mr-2 flex-shrink-0"></div><div class="flex overflow-x-auto hide-scrollbar py-2 w-full snap-x">${cardsHtml}</div></div>`);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() { const chatDiv = document.getElementById('chat-messages'); chatDiv.scrollTop = chatDiv.scrollHeight; }
+
+        function renderShop() {
+            const grid = document.getElementById('shop-grid');
+            grid.innerHTML = '';
+            const filtered = activeCategory === '전체' ? products : products.filter(p => p.category === activeCategory);
+            filtered.forEach(p => {
+                const jsonStr = JSON.stringify(p).replace(/"/g, '&quot;');
+                grid.innerHTML += `<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col"><div class="aspect-square bg-gray-50 flex items-center justify-center text-5xl">${p.image}</div><div class="p-3 flex flex-col flex-1"><h3 class="font-bold text-gray-800 text-xs leading-tight mb-2 flex-1">${p.name}</h3><div class="font-bold text-sm text-gray-900 mb-3">${p.price.toLocaleString()}원</div><button onclick="openPaymentModal(${jsonStr})" class="w-full bg-blue-600 text-white text-xs py-2 rounded-lg font-bold">바로 결제</button></div></div>`;
+            });
+        }
+
+        function renderCategoryFilters() {
+            const container = document.getElementById('category-filters');
+            container.innerHTML = '';
+            categories.forEach(cat => {
+                const active = cat === activeCategory ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 border';
+                container.innerHTML += `<button onclick="setCategory('${cat}')" class="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap ${active}">${cat}</button>`;
+            });
+        }
+
+        function setCategory(cat) { activeCategory = cat; renderCategoryFilters(); renderShop(); }
+
+        function openPaymentModal(product) {
+            currentPaymentProduct = product;
+            document.getElementById('pay-product-name').innerText = product.name;
+            document.getElementById('pay-product-price').innerText = product.price.toLocaleString() + '원';
+            document.getElementById('payment-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('payment-modal-content').classList.remove('translate-y-full'), 10);
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal-content').classList.add('translate-y-full');
+            setTimeout(() => document.getElementById('payment-modal').classList.add('hidden'), 300);
+        }
+
+        // --- [토스트 실전 결제 연동] ---
+        function processPayment() {
+            if(!currentPaymentProduct) return;
+            
+            // 토스 결제창 호출
+            tossPayments.requestPayment('카드', {
+                amount: currentPaymentProduct.price,
+                orderId: 'Myeongbo_' + new Date().getTime(),
+                orderName: currentPaymentProduct.name,
+                successUrl: window.location.href, // 테스트용으로 현재 페이지 지정
+                failUrl: window.location.href,
+            })
+            .catch(function (error) {
+                if (error.code === 'USER_CANCEL') {
+                    showToast('결제가 취소되었습니다.');
+                } else {
+                    showToast('오류: ' + error.message);
+                }
+            });
+            
+            closePaymentModal();
+        }
+    </script>
+</body>
+</html>
