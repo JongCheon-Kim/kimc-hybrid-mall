@@ -30,13 +30,13 @@
                 </div>
                 <div>
                     <h1 class="font-extrabold text-gray-900 leading-none">명보씨푸드</h1>
-                    <span class="text-xs font-medium text-blue-600">김C 하이브리드 몰</span>
+                    <span class="text-xs font-medium text-blue-600">김C 하이브리드 몰 v2.0</span>
                 </div>
             </div>
         </header>
 
         <!-- 토스트 알림 -->
-        <div id="toast-notification" class="absolute top-20 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-3 rounded-full shadow-2xl z-50 transition-all duration-300 opacity-0 pointer-events-none translate-y-[-20px] text-sm font-bold w-[85%] text-center border border-gray-700">
+        <div id="toast-notification" class="absolute top-20 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-3 rounded-full shadow-2xl z-50 transition-all duration-300 opacity-0 pointer-events-none translate-y-[-20px] text-sm font-bold w-[85%] text-center border border-gray-700 z-[60]">
             알림 메시지
         </div>
 
@@ -73,7 +73,7 @@
                 <div id="shop-grid" class="grid grid-cols-2 gap-3 pb-4"></div>
             </div>
 
-            <!-- [3] 관리자 화면 -->
+            <!-- [3] 관리자 화면 (상품로드) -->
             <div id="tab-admin" class="tab-content bg-gray-50 p-4">
                 <div class="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
                     <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center border-b pb-3">
@@ -132,6 +132,24 @@
             </button>
         </nav>
 
+        <!-- 비밀번호 인증 모달 -->
+        <div id="password-modal" class="hidden absolute inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+            <div class="bg-white w-full max-w-[280px] rounded-3xl p-6 shadow-2xl animate-[fadeIn_0.2s_ease-in-out]">
+                <div class="text-center mb-5">
+                    <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="ph-fill ph-lock-key text-2xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900">관리자 인증</h3>
+                    <p class="text-xs text-gray-500 mt-1">상품로드를 위해<br>비밀번호를 입력하세요.</p>
+                </div>
+                <input type="password" id="admin-password-input" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-center text-lg font-bold outline-none focus:border-blue-500 mb-5 tracking-[0.5em]" placeholder="****" onkeypress="if(event.key === 'Enter') verifyPassword()">
+                <div class="flex space-x-2">
+                    <button onclick="closePasswordModal()" class="flex-1 bg-gray-100 text-gray-600 font-bold py-3 rounded-xl hover:bg-gray-200 transition">취소</button>
+                    <button onclick="verifyPassword()" class="flex-1 bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-black transition shadow-md shadow-gray-300">확인</button>
+                </div>
+            </div>
+        </div>
+
         <!-- 결제 모달 -->
         <div id="payment-modal" class="hidden absolute inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-4">
             <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl transition-transform transform translate-y-full duration-300" id="payment-modal-content">
@@ -157,7 +175,7 @@
     </div>
 
     <script>
-        // 토스페이먼츠 객체 초기화 (소장님의 테스트 키 적용)
+        // 토스페이먼츠 객체 초기화
         const tossPayments = TossPayments("test_ck_ma60RZblrqY2jYp7oRpMrwzYWbn1");
 
         let products = [
@@ -174,7 +192,8 @@
         let currentPaymentProduct = null;
         let activeCategory = '전체';
         const categories = ['전체', '생선류', '새우/게', '연체/패류', '건어물'];
-        let uploadedImageBase64 = ''; // 스마트폰에서 올린 사진 데이터 임시 저장용
+        let uploadedImageBase64 = ''; 
+        let isAdminAuthenticated = false; // 관리자 인증 상태 변수
 
         window.onload = () => {
             renderCategoryFilters();
@@ -189,7 +208,19 @@
             setTimeout(() => toast.classList.add('opacity-0', 'translate-y-[-20px]'), 3000);
         }
 
+        // 탭 전환 로직 (비밀번호 검증 포함)
         function switchTab(targetTab) {
+            if (targetTab === 'admin' && !isAdminAuthenticated) {
+                // 인증되지 않은 상태에서 상품로드 누르면 비밀번호 모달 띄움
+                document.getElementById('password-modal').classList.remove('hidden');
+                setTimeout(() => document.getElementById('admin-password-input').focus(), 100);
+                return;
+            }
+            executeTabSwitch(targetTab);
+        }
+
+        // 실제 탭 화면 전환 처리
+        function executeTabSwitch(targetTab) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${targetTab}`).classList.add('active');
             document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -197,6 +228,27 @@
                 else btn.classList.remove('text-blue-600');
             });
             if(targetTab === 'chat') scrollToBottom();
+        }
+
+        // 비밀번호 검증 함수
+        function verifyPassword() {
+            const pwdInput = document.getElementById('admin-password-input');
+            if (pwdInput.value === "1234") {
+                isAdminAuthenticated = true;
+                closePasswordModal();
+                showToast("관리자 모드가 활성화되었습니다.");
+                executeTabSwitch('admin');
+            } else {
+                showToast("비밀번호가 일치하지 않습니다.");
+                pwdInput.value = '';
+                pwdInput.focus();
+            }
+        }
+
+        // 비밀번호 모달 닫기
+        function closePasswordModal() {
+            document.getElementById('password-modal').classList.add('hidden');
+            document.getElementById('admin-password-input').value = '';
         }
 
         // --- [사진 업로드 및 미리보기 로직] ---
@@ -390,20 +442,16 @@
                 price, 
                 category, 
                 tag: '#신규등록', 
-                image: uploadedImageBase64 || '📦' // 업로드된 사진이 있으면 넣고, 없으면 상자 이모지
+                image: uploadedImageBase64 || '📦' 
             };
             products.unshift(newProduct);
             
-            // 1. 등록 후 카테고리를 강제로 '전체'로 맞춰 방금 올린 상품이 보이게 함
             setCategory('전체'); 
-            
-            // 2. 관리자 탭에서 전체쇼핑 탭으로 즉시 화면 강제 전환
             switchTab('shop');
             
             showToast('상품이 전체쇼핑에 즉시 등록되었습니다.');
             e.target.reset();
 
-            // 3. 등록 완료 후 관리자 탭의 사진 미리보기 초기화
             uploadedImageBase64 = '';
             document.getElementById('image-preview').src = '';
             document.getElementById('image-preview').classList.add('hidden');
