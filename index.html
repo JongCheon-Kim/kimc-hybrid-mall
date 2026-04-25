@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>명보씨푸드 - 김C 하이브리드 몰</title>
+    <title>명보씨푸드 - 김C 하이브리드 몰 v2.1</title>
     <!-- Tailwind CSS (디자인 프레임워크) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Phosphor Icons (아이콘 라이브러리) -->
@@ -30,7 +30,7 @@
                 </div>
                 <div>
                     <h1 class="font-extrabold text-gray-900 leading-none">명보씨푸드</h1>
-                    <span class="text-xs font-medium text-blue-600">김C 하이브리드 몰 v2.0</span>
+                    <span class="text-xs font-medium text-blue-600">김C 하이브리드 몰 v2.1</span>
                 </div>
             </div>
         </header>
@@ -73,30 +73,32 @@
                 <div id="shop-grid" class="grid grid-cols-2 gap-3 pb-4"></div>
             </div>
 
-            <!-- [3] 관리자 화면 (상품로드) -->
-            <div id="tab-admin" class="tab-content bg-gray-50 p-4">
-                <div class="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
-                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center border-b pb-3">
-                        <i class="ph-bold ph-gear mr-2 text-gray-500"></i> 현장 상품 등록
+            <!-- [3] 관리자 화면 (상품로드 및 통합 관리 - v2.1 고도화) -->
+            <div id="tab-admin" class="tab-content bg-gray-50 p-4 hide-scrollbar">
+                
+                <!-- 상품 스펙 입력 및 저장 구역 -->
+                <div class="bg-white rounded-2xl shadow-sm p-5 border border-gray-100 mb-4">
+                    <h2 class="text-base font-bold text-gray-800 mb-4 flex items-center border-b border-gray-100 pb-3">
+                        <i class="ph-bold ph-file-plus mr-2 text-blue-600 text-lg"></i> 신규 상품 스펙 입력
                     </h2>
                     <form id="admin-form" onsubmit="handleAdminSubmit(event)" class="space-y-4">
-                        <!-- 숨겨진 파일 입력창 (모바일 카메라/앨범 연동) -->
+                        <!-- 숨겨진 파일 입력창 -->
                         <input type="file" id="admin-image-upload" accept="image/*" class="hidden" onchange="previewImage(event)">
                         
                         <!-- 사진 미리보기 박스 -->
-                        <div id="image-preview-container" onclick="document.getElementById('admin-image-upload').click()" class="border-2 border-dashed border-gray-300 rounded-xl h-32 flex flex-col items-center justify-center text-gray-400 bg-gray-50 cursor-pointer hover:bg-gray-100 relative overflow-hidden">
-                            <i class="ph-bold ph-camera text-3xl mb-2" id="preview-icon"></i>
-                            <span class="text-sm font-medium" id="preview-text">현장 사진 업로드</span>
+                        <div id="image-preview-container" onclick="document.getElementById('admin-image-upload').click()" class="border-2 border-dashed border-gray-300 rounded-xl h-28 flex flex-col items-center justify-center text-gray-400 bg-gray-50 cursor-pointer hover:bg-gray-100 relative overflow-hidden">
+                            <i class="ph-bold ph-camera text-2xl mb-1" id="preview-icon"></i>
+                            <span class="text-[11px] font-bold" id="preview-text">현장 사진 업로드</span>
                             <img id="image-preview" class="hidden absolute inset-0 w-full h-full object-cover" />
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">품명</label>
-                            <input type="text" id="admin-name" required class="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 bg-white" placeholder="예) 당일 조업 제주 은갈치">
+                            <label class="block text-[11px] font-bold text-gray-500 mb-1">파일명 (품명)</label>
+                            <input type="text" id="admin-name" required class="w-full border border-gray-200 rounded-lg p-2 text-sm outline-none focus:border-blue-500 bg-white" placeholder="예) 당일 조업 제주 은갈치">
                         </div>
                         <div class="flex space-x-3">
                             <div class="flex-1">
-                                <label class="block text-xs font-bold text-gray-600 mb-1">카테고리</label>
-                                <select id="admin-category" class="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 bg-white">
+                                <label class="block text-[11px] font-bold text-gray-500 mb-1">파일형식 (어종)</label>
+                                <select id="admin-category" class="w-full border border-gray-200 rounded-lg p-2 text-sm outline-none focus:border-blue-500 bg-white">
                                     <option value="생선류">생선류</option>
                                     <option value="새우/게">새우/게</option>
                                     <option value="연체/패류">연체/패류</option>
@@ -104,13 +106,40 @@
                                 </select>
                             </div>
                             <div class="flex-1">
-                                <label class="block text-xs font-bold text-gray-600 mb-1">판매가(원)</label>
-                                <input type="number" id="admin-price" required class="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 bg-white" placeholder="0">
+                                <label class="block text-[11px] font-bold text-gray-500 mb-1">판매가 (원)</label>
+                                <input type="number" id="admin-price" required class="w-full border border-gray-200 rounded-lg p-2 text-sm outline-none focus:border-blue-500 bg-white" placeholder="0">
                             </div>
                         </div>
-                        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition mt-4 shadow-md">즉시 노출하기</button>
+                        
+                        <!-- 파일 저장 방식의 제어 버튼 -->
+                        <div class="flex space-x-2 pt-2">
+                            <button type="button" onclick="clearAdminForm()" class="flex-1 bg-gray-100 text-gray-600 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition text-sm flex items-center justify-center shadow-sm">
+                                <i class="ph-bold ph-trash mr-1"></i> 취소
+                            </button>
+                            <button type="submit" class="flex-[2] bg-blue-600 text-white font-bold py-2.5 rounded-xl hover:bg-blue-700 transition text-sm flex items-center justify-center shadow-md">
+                                <i class="ph-bold ph-floppy-disk mr-1"></i> 스펙 저장
+                            </button>
+                        </div>
                     </form>
                 </div>
+
+                <!-- 기존 상품 관리 리스트 구역 (삭제 제어 및 전체 초기화) -->
+                <div class="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
+                    <div class="flex justify-between items-center border-b border-gray-100 mb-3 pb-3">
+                        <h2 class="text-base font-bold text-gray-800 flex items-center">
+                            <i class="ph-bold ph-list-dashes mr-2 text-gray-500 text-lg"></i> 현재 판매 상품
+                        </h2>
+                        <!-- 폭탄(전체 초기화) 버튼 -->
+                        <button onclick="promptClearAll()" class="text-[11px] bg-red-50 text-red-500 border border-red-100 px-2.5 py-1.5 rounded-lg font-bold hover:bg-red-100 hover:text-red-600 transition-colors flex items-center shadow-sm">
+                            <i class="ph-bold ph-warning-circle mr-1"></i>전체 비우기
+                        </button>
+                    </div>
+                    <!-- 리스트 렌더링 영역 -->
+                    <div id="admin-product-list" class="space-y-2 max-h-[220px] overflow-y-auto hide-scrollbar">
+                        <!-- JS로 동적 생성 -->
+                    </div>
+                </div>
+                
             </div>
         </div>
 
@@ -140,12 +169,27 @@
                         <i class="ph-fill ph-lock-key text-2xl text-blue-600"></i>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900">관리자 인증</h3>
-                    <p class="text-xs text-gray-500 mt-1">상품로드를 위해<br>비밀번호를 입력하세요.</p>
+                    <p class="text-xs text-gray-500 mt-1">스펙 관리를 위해<br>비밀번호를 입력하세요.</p>
                 </div>
                 <input type="password" id="admin-password-input" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-center text-lg font-bold outline-none focus:border-blue-500 mb-5 tracking-[0.5em]" placeholder="****" onkeypress="if(event.key === 'Enter') verifyPassword()">
                 <div class="flex space-x-2">
                     <button onclick="closePasswordModal()" class="flex-1 bg-gray-100 text-gray-600 font-bold py-3 rounded-xl hover:bg-gray-200 transition">취소</button>
                     <button onclick="verifyPassword()" class="flex-1 bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-black transition shadow-md shadow-gray-300">확인</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 전체 데이터 삭제 확인 커스텀 모달 (이중 안전장치) -->
+        <div id="confirm-clear-modal" class="hidden absolute inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+            <div class="bg-white w-full max-w-[280px] rounded-3xl p-6 shadow-2xl animate-[fadeIn_0.2s_ease-in-out] text-center">
+                <div class="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3 border border-red-100">
+                    <i class="ph-fill ph-warning text-2xl text-red-500"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-1">전체 상품 초기화</h3>
+                <p class="text-xs text-gray-500 mb-5">모든 상품 스펙이 영구적으로 삭제됩니다.<br>정말 모두 비우시겠습니까?</p>
+                <div class="flex space-x-2">
+                    <button onclick="closeClearModal()" class="flex-1 bg-gray-100 text-gray-600 font-bold py-3 rounded-xl hover:bg-gray-200 transition">취소</button>
+                    <button onclick="executeClearAll()" class="flex-1 bg-red-500 text-white font-bold py-3 rounded-xl hover:bg-red-600 transition shadow-md shadow-red-200">비우기</button>
                 </div>
             </div>
         </div>
@@ -178,7 +222,8 @@
         // 토스페이먼츠 객체 초기화
         const tossPayments = TossPayments("test_ck_ma60RZblrqY2jYp7oRpMrwzYWbn1");
 
-        let products = [
+        // 초기 기본 상품 데이터 
+        const defaultProducts = [
             { id: 'P001', name: '명보 특급 흰다리새우', size: '31/40미(대)', price: 18900, tag: '#베스트셀러', category: '새우/게', image: '🍤' },
             { id: 'P002', name: '김씨밥 손질 고등어', size: '특대(30cm+)', price: 15500, tag: '#당일바리', category: '생선류', image: '🐟' },
             { id: 'P003', name: '명보 제주 은갈치', size: '3지(상급)', price: 24000, tag: '#신상품', category: '생선류', image: '🌊' },
@@ -189,17 +234,30 @@
             { id: 'P008', name: '통영 당일조업 생굴', size: '1kg(특)', price: 16500, tag: '#바다의우유', category: '연체/패류', image: '🪨' }
         ];
 
+        // 로컬 스토리지에서 상품 데이터 불러오기 (없으면 기본 데이터 사용)
+        let products = JSON.parse(localStorage.getItem('kimc_products')) || defaultProducts;
+
         let currentPaymentProduct = null;
         let activeCategory = '전체';
         const categories = ['전체', '생선류', '새우/게', '연체/패류', '건어물'];
         let uploadedImageBase64 = ''; 
-        let isAdminAuthenticated = false; // 관리자 인증 상태 변수
+        let isAdminAuthenticated = false; 
 
         window.onload = () => {
             renderCategoryFilters();
             renderShop();
+            renderAdminProductList(); 
             addSystemMessage('소장님, 토스 실전 결제 연동이 완료되었습니다! "고등어 결제할게"라고 말씀하시거나 쇼핑 탭에서 상품을 주문해 보십시오.');
         };
+
+        // 데이터 영구 저장 함수
+        function saveProductsToStorage() {
+            try {
+                localStorage.setItem('kimc_products', JSON.stringify(products));
+            } catch (e) {
+                showToast('브라우저 저장 공간이 가득 찼습니다. 기존 상품을 일부 삭제해주세요.');
+            }
+        }
 
         function showToast(message) {
             const toast = document.getElementById('toast-notification');
@@ -208,10 +266,9 @@
             setTimeout(() => toast.classList.add('opacity-0', 'translate-y-[-20px]'), 3000);
         }
 
-        // 탭 전환 로직 (비밀번호 검증 포함)
+        // 탭 전환 로직
         function switchTab(targetTab) {
             if (targetTab === 'admin' && !isAdminAuthenticated) {
-                // 인증되지 않은 상태에서 상품로드 누르면 비밀번호 모달 띄움
                 document.getElementById('password-modal').classList.remove('hidden');
                 setTimeout(() => document.getElementById('admin-password-input').focus(), 100);
                 return;
@@ -230,13 +287,13 @@
             if(targetTab === 'chat') scrollToBottom();
         }
 
-        // 비밀번호 검증 함수
+        // 비밀번호 검증
         function verifyPassword() {
             const pwdInput = document.getElementById('admin-password-input');
-            if (pwdInput.value === "1234") {
+            if (pwdInput.value === "1234") { 
                 isAdminAuthenticated = true;
                 closePasswordModal();
-                showToast("관리자 모드가 활성화되었습니다.");
+                showToast("보안 구역(관리자 모드)이 활성화되었습니다.");
                 executeTabSwitch('admin');
             } else {
                 showToast("비밀번호가 일치하지 않습니다.");
@@ -245,23 +302,127 @@
             }
         }
 
-        // 비밀번호 모달 닫기
         function closePasswordModal() {
             document.getElementById('password-modal').classList.add('hidden');
             document.getElementById('admin-password-input').value = '';
         }
 
-        // --- [사진 업로드 및 미리보기 로직] ---
+        // --- [관리자 V2.1: 전체 상품 초기화 로직 (이중 확인)] ---
+        function promptClearAll() {
+            document.getElementById('confirm-clear-modal').classList.remove('hidden');
+        }
+
+        function closeClearModal() {
+            document.getElementById('confirm-clear-modal').classList.add('hidden');
+        }
+
+        function executeClearAll() {
+            products = []; // 배열 완전 비우기
+            saveProductsToStorage(); // 스토리지 동기화
+            
+            renderShop();
+            renderAdminProductList();
+            
+            closeClearModal();
+            showToast('모든 상품 데이터가 완벽하게 삭제되었습니다.');
+        }
+
+        // --- [관리자 V2.1: 상품 현황 리스트 렌더링] ---
+        function renderAdminProductList() {
+            const listContainer = document.getElementById('admin-product-list');
+            listContainer.innerHTML = '';
+            
+            if(products.length === 0) {
+                listContainer.innerHTML = '<div class="text-center text-gray-400 text-xs py-10 font-bold">현재 등록된 상품이 없습니다.<br>상단에서 새로운 상품을 로드해주세요.</div>';
+                return;
+            }
+
+            products.forEach(p => {
+                listContainer.innerHTML += `
+                    <div class="flex items-center justify-between p-2.5 border border-gray-100 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center space-x-3 overflow-hidden">
+                            <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-xl flex-shrink-0 shadow-sm border border-gray-100 overflow-hidden">
+                                ${renderProductImage(p)}
+                            </div>
+                            <div class="truncate">
+                                <div class="text-xs font-bold text-gray-800 truncate">${p.name}</div>
+                                <div class="text-[11px] text-blue-600 font-extrabold mt-0.5">${p.price.toLocaleString()}원</div>
+                            </div>
+                        </div>
+                        <button onclick="deleteProduct('${p.id}')" class="w-8 h-8 flex items-center justify-center bg-white border border-red-100 text-red-500 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors flex-shrink-0 ml-2 shadow-sm">
+                            <i class="ph-bold ph-trash text-lg"></i>
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        // --- [관리자 V2.1: 개별 상품 삭제 로직] ---
+        function deleteProduct(id) {
+            products = products.filter(p => p.id !== id);
+            
+            saveProductsToStorage(); // 삭제 시 브라우저 스토리지에도 반영
+            
+            renderShop();
+            renderAdminProductList();
+            showToast('해당 상품이 시장에서 영구 삭제(내리기) 처리되었습니다.');
+        }
+
+        // --- [관리자 V2.1: 입력 초기화 로직] ---
+        function clearAdminForm() {
+            document.getElementById('admin-form').reset();
+            uploadedImageBase64 = '';
+            document.getElementById('image-preview').src = '';
+            document.getElementById('image-preview').classList.add('hidden');
+            document.getElementById('preview-icon').classList.remove('hidden');
+            document.getElementById('preview-text').classList.remove('hidden');
+        }
+
+        // --- [★ 사진 자동 압축 (Canvas API 리사이징) 로직] ---
         function previewImage(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    uploadedImageBase64 = e.target.result;
-                    document.getElementById('image-preview').src = uploadedImageBase64;
-                    document.getElementById('image-preview').classList.remove('hidden');
-                    document.getElementById('preview-icon').classList.add('hidden');
-                    document.getElementById('preview-text').classList.add('hidden');
+                    // 원본 이미지를 불러오기 위한 Image 객체 생성
+                    const img = new Image();
+                    img.onload = function() {
+                        // 리사이징 기준 크기 설정 (최대 800px)
+                        const MAX_WIDTH = 800;
+                        const MAX_HEIGHT = 800;
+                        let width = img.width;
+                        let height = img.height;
+
+                        // 비율에 맞춰 크기 조절
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+
+                        // Canvas를 생성하여 이미지 그리기 (여기서 압축 발생)
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Canvas에서 압축된 JPEG Base64 데이터 추출 (품질 70%)
+                        uploadedImageBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                        
+                        // 화면에 미리보기 반영
+                        document.getElementById('image-preview').src = uploadedImageBase64;
+                        document.getElementById('image-preview').classList.remove('hidden');
+                        document.getElementById('preview-icon').classList.add('hidden');
+                        document.getElementById('preview-text').classList.add('hidden');
+                    };
+                    img.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
             }
@@ -272,10 +433,10 @@
             if (product.image && product.image.startsWith('data:image')) {
                 return `<img src="${product.image}" class="w-full h-full object-cover" />`;
             }
-            return product.image; // 사진이 없으면 기본 이모지 렌더링
+            return product.image; 
         }
 
-        // 누락되었던 퀵버튼 클릭 핸들러 복구
+        // 퀵버튼 클릭 핸들러
         function handleQuickMessage(text) {
             document.getElementById('chat-input').value = text;
             sendMessage();
@@ -293,19 +454,13 @@
                 let replyProducts = [];
                 let orderTriggered = false;
 
-                // 1. 대화형 주문 의도 파악
                 const isOrderIntent = /(살게|주문|결제|줘|할게|사줘|주세요)/.test(text); 
-                
-                // 2. 검색어 정제 (의도 관련 단어 제거하여 순수 상품명만 추출)
                 const searchKeyword = text.replace(/(살게|주문|결제|줘|할게|주세요|보여줘)/g, '').trim();
 
-                // 3. 동적 검색 엔진 (전체 상품 DB 실시간 순회)
                 let matchedProduct = products.find(p => {
-                    // 신규 등록된 상품명 동적 매칭 (검색어가 상품명에 포함되거나, 상품명이 원문에 포함된 경우)
                     if (searchKeyword.length >= 2 && p.name.includes(searchKeyword)) return true;
                     if (text.includes(p.name)) return true;
                     
-                    // 기존 하드코딩 키워드 폴백 지원 (UX 유지 및 예외 처리)
                     if (text.includes('고등어') && p.name.includes('고등어')) return true;
                     if (text.includes('새우') && p.name.includes('새우')) return true;
                     if (text.includes('꽃게') && p.name.includes('꽃게')) return true;
@@ -318,23 +473,26 @@
                     return false;
                 });
 
-                // 4. 응답 분기 처리
                 if (isOrderIntent && matchedProduct) {
                     replyText = `사장님, [${matchedProduct.name}] 바로 준비하겠습니다! 아래 실제 결제창을 띄워드렸으니 확인 부탁드립니다.`;
                     orderTriggered = true;
                     replyProducts = [matchedProduct];
                 } else if (matchedProduct) {
-                     // 기존 상품에 대한 특별 멘트
                      if (matchedProduct.id === 'P002') replyText = '오늘 아침에 막 손질 끝낸 고등어입니다! 살이 아주 튼실합니다. 바로 확인해보시겠습니까?';
                      else if (matchedProduct.id === 'P001') replyText = '명보의 자랑, 특급 흰다리새우 추천드립니다. 급냉으로 신선도 꽉 잡았습니다.';
                      else if (matchedProduct.id === 'P005') replyText = '알이 꽉 찬 서해안 암꽃게 방금 들어왔습니다. 수량이 얼마 안 남았으니 서두르십시오!';
-                     // ★ 신규 등록 상품을 위한 동적 대응 멘트
                      else replyText = `사장님께서 찾으시는 [${matchedProduct.name}] 여기 대령했습니다. 상태 아주 좋습니다!`;
                      
                      replyProducts = [matchedProduct];
                 } else if (text.includes('오늘의 추천') || text.includes('추천')) {
                     replyText = '오늘 선별장에서 가장 상태 좋은 놈들로 딱 3개만 추려봤습니다. 옆으로 넘겨보시고 골라주십시오!';
-                    replyProducts = [products[4], products[1], products[5]];
+                    if(products.length >= 3) {
+                        replyProducts = [products[0], products[1], products[2]]; 
+                    } else if (products.length > 0) {
+                        replyProducts = [...products];
+                    } else {
+                        replyText = '현재 창고가 텅 비었습니다. 소장님께서 신상품을 올려주시길 기다리고 있습니다!';
+                    }
                 }
 
                 addSystemMessage(replyText);
@@ -376,6 +534,12 @@
             const grid = document.getElementById('shop-grid');
             grid.innerHTML = '';
             const filtered = activeCategory === '전체' ? products : products.filter(p => p.category === activeCategory);
+            
+            if(filtered.length === 0) {
+                 grid.innerHTML = '<div class="col-span-2 text-center text-gray-400 text-sm py-10 font-bold">해당 카테고리에 등록된 상품이 없습니다.</div>';
+                 return;
+            }
+
             filtered.forEach(p => {
                 const jsonStr = JSON.stringify(p).replace(/"/g, '&quot;');
                 grid.innerHTML += `<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col"><div class="aspect-square bg-gray-50 flex items-center justify-center text-5xl overflow-hidden">${renderProductImage(p)}</div><div class="p-3 flex flex-col flex-1"><h3 class="font-bold text-gray-800 text-xs leading-tight mb-2 flex-1">${p.name}</h3><div class="font-bold text-sm text-gray-900 mb-3">${p.price.toLocaleString()}원</div><button onclick="openPaymentModal(${jsonStr})" class="w-full bg-blue-600 text-white text-xs py-2 rounded-lg font-bold">바로 결제</button></div></div>`;
@@ -410,12 +574,11 @@
         function processPayment() {
             if(!currentPaymentProduct) return;
             
-            // 토스 결제창 호출
             tossPayments.requestPayment('카드', {
                 amount: currentPaymentProduct.price,
                 orderId: 'Myeongbo_' + new Date().getTime(),
                 orderName: currentPaymentProduct.name,
-                successUrl: window.location.href, // 테스트용으로 현재 페이지 지정
+                successUrl: window.location.href,
                 failUrl: window.location.href,
             })
             .catch(function (error) {
@@ -429,6 +592,7 @@
             closePaymentModal();
         }
 
+        // --- [관리자 V2.1: 스펙 확정 및 저장] ---
         function handleAdminSubmit(e) {
             e.preventDefault();
             const name = document.getElementById('admin-name').value;
@@ -437,26 +601,28 @@
             if(!name || !price) return;
             
             const newProduct = { 
-                id: 'P'+(products.length+1), 
+                id: 'P' + new Date().getTime(), 
                 name, 
                 price, 
                 category, 
                 tag: '#신규등록', 
                 image: uploadedImageBase64 || '📦' 
             };
+            
+            // DB(배열)에 기록
             products.unshift(newProduct);
             
-            setCategory('전체'); 
-            switchTab('shop');
+            // 추가 시 브라우저 스토리지에도 반영하여 영구 보존
+            saveProductsToStorage();
             
-            showToast('상품이 전체쇼핑에 즉시 등록되었습니다.');
-            e.target.reset();
-
-            uploadedImageBase64 = '';
-            document.getElementById('image-preview').src = '';
-            document.getElementById('image-preview').classList.add('hidden');
-            document.getElementById('preview-icon').classList.remove('hidden');
-            document.getElementById('preview-text').classList.remove('hidden');
+            // 데이터 무결성: 쇼핑 리스트와 관리자 리스트 동시 업데이트
+            renderShop();
+            renderAdminProductList();
+            
+            showToast('성공적으로 스펙이 저장되어 공식 반영되었습니다.');
+            
+            // 입력폼 초기화 및 관리자 탭 유지 (계속 작업할 수 있도록)
+            clearAdminForm();
         }
     </script>
 </body>
